@@ -8,7 +8,7 @@ const nextConfig = {
     config.resolve.alias = config.resolve.alias || {};
     config.resolve.alias['@ui'] = path.resolve(
       __dirname,
-      '../../packages/ui/src'
+      '../../packages/ui/src',
     );
     return config;
   },

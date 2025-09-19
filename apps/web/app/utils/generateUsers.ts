@@ -85,6 +85,7 @@ export function generateUsers(): Person[] {
       accountNumber,
       salary,
       dob,
+      risk: Math.floor(Math.random() * 101),
       location: {
         city: city.city,
         coords: { lat: Number(lat.toFixed(6)), lng: Number(lng.toFixed(6)) },

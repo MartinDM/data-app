@@ -1,8 +1,7 @@
-// types/person.ts
-
 export type Person = {
-  name: string;
   id: string;
+  name: string;
+  risk: number;
   accountNumber: string;
   salary: number;
   dob: string; // ISO date string

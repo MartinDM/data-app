@@ -1,7 +1,8 @@
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Toaster } from 'sonner';
-import '@workspace/ui/globals.css';
+import '@workspace/ui/styles/globals.css';
 import { Providers } from '@/components/providers';
+import { Navbar } from '../components/navbar';
 
 const fontSans = Geist({
   subsets: ['latin'],
@@ -23,7 +24,12 @@ export default function RootLayout({
       <body
         className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <div className="flex flex-col items-center justify-start min-h-svh gap-2">
+            <Navbar />
+            <div className="w-full max-w-screen-lg px-4">{children}</div>
+          </div>
+        </Providers>
         <Toaster />
       </body>
     </html>
