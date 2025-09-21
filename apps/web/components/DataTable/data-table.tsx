@@ -3,7 +3,6 @@ import { useEffect, useState, useMemo } from 'react';
 import * as React from 'react';
 import { Person } from '../types/person';
 import { FaRegCalendarAlt } from 'react-icons/fa';
-import { DataTableColumnHeader } from './data-table-toolbar-header';
 import { DataTableToolbar } from './data-table-toolbar';
 import {
   ColumnDef,
