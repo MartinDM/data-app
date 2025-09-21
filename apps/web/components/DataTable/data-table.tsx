@@ -3,7 +3,8 @@ import { useEffect, useState, useMemo } from 'react';
 import * as React from 'react';
 import { Person } from '../types/person';
 import { FaRegCalendarAlt } from 'react-icons/fa';
-
+import { DataTableColumnHeader } from './data-table-toolbar-header';
+import { DataTableToolbar } from './data-table-toolbar';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -50,14 +51,14 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@workspace/ui/components/button';
 import { Calendar } from '@workspace/ui/components/calendar';
 import { cn } from '@workspace/ui/lib/utils';
-import { FormSchema } from '../../app/filter/utils';
+import { FormSchema } from '../../app/utils';
+import { getColumns } from '../../components/DataTable/columns';
 
 interface DataTableProps {
-  columns: ColumnDef<Person>[];
   allUsers: Person[];
 }
 
-export function DataTable({ columns, allUsers }: DataTableProps) {
+export function DataTable({ allUsers }: DataTableProps) {
   // State for filtered users and date range
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -65,8 +66,9 @@ export function DataTable({ columns, allUsers }: DataTableProps) {
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState({});
+  const [valsHidden, setValsHidden] = useState(false);
 
-  // Memoize filtered users
+  const columns = getColumns(valsHidden);
   const users = useMemo(() => {
     if (dateRange.from && dateRange.to) {
       const from = format(dateRange.from, 'yyyy-MM-dd');
@@ -92,7 +94,6 @@ export function DataTable({ columns, allUsers }: DataTableProps) {
     },
   });
 
-  // Table instance
   const table = useReactTable({
     data: users,
     columns,
@@ -177,19 +178,23 @@ export function DataTable({ columns, allUsers }: DataTableProps) {
             )}
           />
           <div className="flex justify-center gap-5 mb-4">
-            <Button className="cursor-pointer" type="submit">
-              Submit
-            </Button>
-            <Button
-              className="cursor-pointer"
-              type="button"
-              onClick={handleReset}
-            >
+            <Button type="submit">Submit</Button>
+            <Button type="button" onClick={handleReset}>
               Reset
             </Button>
           </div>
         </form>
       </Form>
+      <p className="text-right text-xs font-bold">
+        Found {table.getFilteredRowModel().rows.length} results
+      </p>
+      <div className="flex items-center py-4">
+        <DataTableToolbar
+          valsHidden={valsHidden}
+          setValsHidden={setValsHidden}
+          table={table}
+        />
+      </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>

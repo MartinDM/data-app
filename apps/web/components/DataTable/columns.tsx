@@ -4,7 +4,15 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Person } from '../../app/types/person';
 import { Checkbox } from '@workspace/ui/components/checkbox';
 import { DataTableColumnHeader } from './data-table-column-header';
-export const columns: ColumnDef<Person>[] = [
+import { DataTableRowActions } from './data-table-row-actions';
+
+const getRiskByScore = (risk: number) => {
+  if (risk < 33) return 'Low';
+  if (risk < 66) return 'Medium';
+  return 'High';
+};
+
+export const getColumns: ColumnDef<Person>[] = (valsHidden: boolean) => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -56,19 +64,19 @@ export const columns: ColumnDef<Person>[] = [
       <DataTableColumnHeader column={column} title="Risk" />
     ),
     cell: ({ row }) => {
-      const risk = row.getValue('risk');
-      const riskLevel = risk < 33 ? 'Low' : risk < 66 ? 'Medium' : 'High';
+      const riskScore = row.getValue('risk') as number;
+      const risk = getRiskByScore(riskScore);
       const riskColor =
-        riskLevel === 'Low'
+        risk === 'Low'
           ? 'text-green-500'
-          : riskLevel === 'Medium'
+          : risk === 'Medium'
             ? 'text-yellow-500'
             : 'text-red-500';
-      return <div className={riskColor + ' font-medium'}>{riskLevel}</div>;
+      return <div className={riskColor + ' font-medium'}>{riskScore}</div>;
     },
     sortingFn: 'alphanumeric',
     filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
+      return value.includes(getRiskByScore(row.getValue(id) as number));
     },
   },
   {
@@ -94,12 +102,12 @@ export const columns: ColumnDef<Person>[] = [
       <DataTableColumnHeader column={column} title="Salary" />
     ),
     cell: ({ row }) => {
+      if (valsHidden) return '---';
       const salary = parseFloat(row.getValue('salary'));
       const formatted = new Intl.NumberFormat('en-GB', {
         style: 'currency',
         currency: 'GBP',
       }).format(salary);
-
       return <div className="font-medium">{formatted}</div>;
     },
   },
@@ -124,5 +132,9 @@ export const columns: ColumnDef<Person>[] = [
       return <div className="font-medium">{dob}</div>;
     },
     sortingFn: 'datetime',
+  },
+  {
+    id: 'actions',
+    cell: ({ row }) => <DataTableRowActions row={row} />,
   },
 ];
