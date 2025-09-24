@@ -46,8 +46,8 @@ export const nextJsConfig = [
       // React scope no longer necessary with new JSX transform.
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
-      // Show unused variable warnings
-      'no-unused-vars': 'warn',
+      // Show unused variable warnings (disable base rule to avoid duplicates with TS rule)
+      'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': 'warn',
     },
   },

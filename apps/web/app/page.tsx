@@ -1,11 +1,10 @@
 import React from 'react';
-import { cn } from '@workspace/ui/lib/utils';
 import { DataTable } from '../components/DataTable/data-table';
-import { generateUsers } from './utils/generateUsers';
-import { Person } from '../types/person';
+import { createPeople } from './utils/helpers';
+import { Person } from './types/person';
 
 async function getData(): Promise<Person[]> {
-  return generateUsers();
+  return createPeople(100);
 }
 
 export default async function DataPage() {

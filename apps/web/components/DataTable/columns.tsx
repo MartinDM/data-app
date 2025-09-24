@@ -1,10 +1,15 @@
 'use client';
-
 import { ColumnDef } from '@tanstack/react-table';
 import { Person } from '../../app/types/person';
 import { Checkbox } from '@workspace/ui/components/checkbox';
 import { DataTableColumnHeader } from './data-table-column-header';
 import { DataTableRowActions } from './data-table-row-actions';
+import { Info } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@workspace/ui/components/tooltip';
 
 const getRiskByScore = (risk: number) => {
   if (risk < 33) return 'Low';
@@ -136,5 +141,26 @@ export const getColumns: ColumnDef<Person>[] = (valsHidden: boolean) => [
   {
     id: 'actions',
     cell: ({ row }) => <DataTableRowActions row={row} />,
+  },
+  {
+    id: 'bio',
+    accessorKey: 'bio',
+    sorting: false,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Bio" />
+    ),
+    cell: ({ row }) => {
+      const bio = row.getValue('bio') as string;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Info />
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{bio}</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
   },
 ];

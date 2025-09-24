@@ -16,6 +16,7 @@ export const personSchema = z.object({
   risk: z.number().int().min(0).max(100),
   accountNumber: z.string(),
   salary: z.number(),
+  bio: z.string(),
   dob: z.string(), // ISO date string
   location: z.object({
     city: z.string(),
@@ -25,10 +26,6 @@ export const personSchema = z.object({
     }),
   }),
 });
-
-export type Person = z.infer<typeof personSchema>;
-
-export type Task = z.infer<typeof taskSchema>;
 
 export const labels = [
   {

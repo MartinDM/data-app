@@ -1,11 +1,10 @@
 'use client';
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import * as React from 'react';
-import { Person } from '../types/person';
+import { Person } from '../../app/types/person';
 import { FaRegCalendarAlt } from 'react-icons/fa';
 import { DataTableToolbar } from './data-table-toolbar';
 import {
-  ColumnDef,
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
@@ -18,7 +17,6 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table';
-
 import {
   Popover,
   PopoverContent,
@@ -27,7 +25,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -36,15 +33,12 @@ import {
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from '@workspace/ui/components/table';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { Button } from '@workspace/ui/components/button';
@@ -66,8 +60,11 @@ export function DataTable({ allUsers }: DataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState({});
   const [valsHidden, setValsHidden] = useState(false);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const columns = getColumns(valsHidden);
+
+  // Use memo to only re-run when the deps change
   const users = useMemo(() => {
     if (dateRange.from && dateRange.to) {
       const from = format(dateRange.from, 'yyyy-MM-dd');
@@ -100,6 +97,7 @@ export function DataTable({ allUsers }: DataTableProps) {
       sorting,
       rowSelection,
       columnFilters,
+      columnVisibility,
     },
     initialState: {
       pagination: {
@@ -109,6 +107,7 @@ export function DataTable({ allUsers }: DataTableProps) {
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
+    onColumnVisibilityChange: setColumnVisibility,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
