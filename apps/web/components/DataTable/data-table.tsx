@@ -1,9 +1,9 @@
 'use client';
-import { useState, useMemo } from 'react';
 import * as React from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Person } from '../../app/types/person';
-import { FaRegCalendarAlt } from 'react-icons/fa';
 import { DataTableToolbar } from './data-table-toolbar';
+import { DobForm } from '../DobForm/DobForm';
 import {
   ColumnFiltersState,
   flexRender,
@@ -17,19 +17,7 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@workspace/ui/components/popover';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@workspace/ui/components/form';
+
 import {
   Table,
   TableBody,
@@ -38,13 +26,11 @@ import {
   TableHeader,
   TableRow,
 } from '@workspace/ui/components/table';
-import { zodResolver } from '@hookform/resolvers/zod';
+
 import { format } from 'date-fns';
-import { useForm } from 'react-hook-form';
 import { Button } from '@workspace/ui/components/button';
 import { Calendar } from '@workspace/ui/components/calendar';
 import { cn } from '@workspace/ui/lib/utils';
-import { FormSchema } from '../../app/utils';
 import { getColumns } from '../../components/DataTable/columns';
 
 interface DataTableProps {
@@ -53,7 +39,6 @@ interface DataTableProps {
 
 export function DataTable({ allUsers }: DataTableProps) {
   // State for filtered users and date range
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
   );
@@ -61,10 +46,9 @@ export function DataTable({ allUsers }: DataTableProps) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [valsHidden, setValsHidden] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [selectedCount, setSelectedCount] = useState<number>(0);
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
 
-  const columns = getColumns(valsHidden);
-
-  // Use memo to only re-run when the deps change
   const users = useMemo(() => {
     if (dateRange.from && dateRange.to) {
       const from = format(dateRange.from, 'yyyy-MM-dd');
@@ -76,19 +60,7 @@ export function DataTable({ allUsers }: DataTableProps) {
     return allUsers;
   }, [dateRange, allUsers]);
 
-  const onSubmit = (data: { dob: { from?: Date; to?: Date } }) => {
-    setDateRange({ from: data.dob.from, to: data.dob.to });
-  };
-
-  // Form for date range selection
-  const form = useForm<{
-    dob: { from?: Date; to?: Date };
-  }>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      dob: { from: undefined, to: undefined },
-    },
-  });
+  const columns = getColumns(valsHidden);
 
   const table = useReactTable({
     data: users,
@@ -117,74 +89,21 @@ export function DataTable({ allUsers }: DataTableProps) {
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
-  const handleReset = () => {
-    form.reset();
-    setDateRange({});
-  };
+  useEffect(() => {
+    const selectedRows = table.getSelectedRowModel().rows;
+    const selectedPeopleIds = selectedRows.map((row) => row.original.id);
+    setSelectedCount(selectedPeopleIds.length);
+  }, [table, rowSelection]);
 
   return (
     <div className="w-full">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2 mb-5">
-          <FormField
-            control={form.control}
-            name="dob"
-            render={({ field }) => (
-              <FormItem className="flex font-bold items-center flex-col">
-                <h1>Filter by date DOB range</h1>
-                <FormLabel>
-                  {' '}
-                  A list of customers born between two dates.
-                </FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={'outline'}
-                        className={cn(
-                          'w-[240px] pl-3  mx-auto font-normal',
-                          !field.value && 'text-muted-foreground',
-                        )}
-                      >
-                        {field.value && field.value.from ? (
-                          field.value.to ? (
-                            `${format(field.value.from, 'PPP')} - ${format(field.value.to, 'PPP')}`
-                          ) : (
-                            format(field.value.from, 'PPP')
-                          )
-                        ) : (
-                          <span>Pick a date range</span>
-                        )}
-                        <FaRegCalendarAlt className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="range"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date('1900-01-01')
-                      }
-                      captionLayout="dropdown"
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="flex justify-center gap-5 mb-4">
-            <Button type="submit">Submit</Button>
-            <Button type="button" onClick={handleReset}>
-              Reset
-            </Button>
-          </div>
-        </form>
-      </Form>
+      <DobForm dateRange={dateRange} setDateRange={setDateRange} />
       <p className="text-right text-xs font-bold">
         Found {table.getFilteredRowModel().rows.length} results
+      </p>
+
+      <p className="text-right text-sm font-semibold text-zinc-200 mb-2">
+        {selectedCount} selected
       </p>
       <div className="flex items-center py-4">
         <DataTableToolbar

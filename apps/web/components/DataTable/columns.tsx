@@ -147,7 +147,7 @@ export const getColumns: ColumnDef<Person>[] = (valsHidden: boolean) => [
     accessorKey: 'bio',
     sorting: false,
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Bio" />
+      <DataTableColumnHeader column={column} disableSorting title="Bio" />
     ),
     cell: ({ row }) => {
       const bio = row.getValue('bio') as string;

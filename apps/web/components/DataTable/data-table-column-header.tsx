@@ -15,6 +15,7 @@ interface DataTableColumnHeaderProps<TData, TValue>
   extends React.HTMLAttributes<HTMLDivElement> {
   column: Column<TData, TValue>;
   title: string;
+  disableSorting?: boolean;
 }
 
 export function DataTableColumnHeader<TData, TValue>({

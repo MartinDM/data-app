@@ -29,13 +29,13 @@ export const personSchema = z.object({
 
 export const labels = [
   {
-    value: 'uk',
-    label: 'Uk',
+    value: 'high',
+    label: 'High',
     icon: CircleOff,
   },
   {
-    value: 'europe',
-    label: 'Europe',
+    value: 'low',
+    label: 'Low',
     icon: Timer,
   },
 ];

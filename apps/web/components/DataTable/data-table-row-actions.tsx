@@ -1,7 +1,7 @@
 'use client';
 
 import { Row } from '@tanstack/react-table';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, User } from 'lucide-react';
 
 import { Button } from '@workspace/ui/components/button';
 import {
@@ -45,15 +45,19 @@ export function DataTableRowActions<TData>({
       <DropdownMenuContent align="end" className="w-[160px]">
         <DropdownMenuItem>Edit</DropdownMenuItem>
         <DropdownMenuItem>Make a copy</DropdownMenuItem>
-        <DropdownMenuItem>Favorite</DropdownMenuItem>
+        <DropdownMenuItem>Add to list...</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger>Labels</DropdownMenuSubTrigger>
+          <DropdownMenuSubTrigger>Apply label...</DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
             <DropdownMenuRadioGroup value={person.risk}>
               {labels.map((label) => (
-                <DropdownMenuRadioItem key={label.value} value={label.value}>
-                  {label.label}
+                <DropdownMenuRadioItem
+                  className="flex items-center gap-2"
+                  key={label.value}
+                  value={label.value}
+                >
+                  <User /> {label.label}
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
