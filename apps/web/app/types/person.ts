@@ -84,7 +84,24 @@ export type TransactionInsights = {
   };
 };
 
-export type LocationHistoryEntry = {
+export type ResidenceHistory = {
+  id: string;
+  timestamp: Date;
+  location: {
+    city: string;
+    state?: string;
+    country: string;
+    coords: {
+      lat: number;
+      lng: number;
+    };
+  };
+  startDate: Date;
+  endDate?: Date;
+  residenceType: 'primary' | 'secondary' | 'temporary';
+};
+
+export type LocationHistory = {
   id: string;
   timestamp: Date;
   location: {
@@ -98,7 +115,7 @@ export type LocationHistoryEntry = {
     address?: string;
     postalCode?: string;
   };
-  type: 'residence' | 'work' | 'travel' | 'visit' | 'other';
+  locationType: 'residence' | 'work' | 'travel' | 'visit' | 'other';
   duration?: number; // Duration in days if applicable
   confidence: 'high' | 'medium' | 'low'; // Data confidence level
   source: 'gps' | 'check-in' | 'transaction' | 'survey' | 'inferred';
@@ -110,13 +127,14 @@ export type LocationInsights = {
     city: string;
     state?: string;
     country: string;
+    address?: string;
     coords: {
       lat: number;
       lng: number;
     };
     since: Date; // When they moved to current location
   };
-  locationHistory: LocationHistoryEntry[];
+  locationHistory: LocationHistory[];
   travelPatterns: {
     frequentDestinations: Array<{
       city: string;
@@ -128,20 +146,7 @@ export type LocationInsights = {
     averageStayDuration: number; // Average days per location
     timeZoneChanges: number; // Number of timezone changes in last year
   };
-  residenceHistory: Array<{
-    location: {
-      city: string;
-      state?: string;
-      country: string;
-      coords: {
-        lat: number;
-        lng: number;
-      };
-    };
-    startDate: Date;
-    endDate?: Date; // null if current residence
-    residenceType: 'primary' | 'secondary' | 'temporary';
-  }>;
+  residenceHistory: ResidenceHistory[];
   workLocations: Array<{
     location: {
       city: string;

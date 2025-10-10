@@ -1,7 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Person } from '../../app/types/person';
-import { MapPin, Calendar, CreditCard, Loader2, Globe } from 'lucide-react';
+import { MapPin, Loader2, Globe } from 'lucide-react';
+
 import {
   Dialog,
   DialogContent,
@@ -11,26 +12,23 @@ import {
 } from '@workspace/ui/components/dialog';
 import { Separator } from '@workspace/ui/components/separator';
 import { ScrollArea } from '@workspace/ui/components/scroll-area';
+import { usePersonData } from '../../contexts/PersonDataContext';
 
 interface LocationInsightsModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   personId: string;
-  fetchPersonById: (id: string) => Person | undefined;
 }
 
 export function LocationInsightsModal({
   isOpen,
   onOpenChange,
   personId,
-  fetchPersonById,
 }: LocationInsightsModalProps) {
+  const { fetchPersonById } = usePersonData();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [person, setPerson] = useState<Person | null>(null);
-  const [locationData, setLocationData] = useState<
-    Person['locationInsights'] | null
-  >(null);
 
   useEffect(() => {
     if (isOpen && personId && fetchPersonById) {
@@ -38,12 +36,14 @@ export function LocationInsightsModal({
       setError(null);
       try {
         const personData = fetchPersonById(personId);
+        console.log(personData);
         setPerson(personData || null);
         if (!personData) {
           setError('Person not found');
         }
         setLoading(false);
-      } catch (err) {
+      } catch (e) {
+        console.log(e);
         setError('Failed to load person data');
         setLoading(false);
       }
@@ -51,14 +51,8 @@ export function LocationInsightsModal({
   }, [isOpen, personId, fetchPersonById]);
 
   useEffect(() => {
-    const locationData = person?.locationInsights || null;
-    setLocationData(locationData);
+    setPerson(person); // Ensure person state is updated
   }, [person]);
-
-  const formatDate = (date: Date | string) => {
-    if (typeof date === 'string') return date;
-    return date.toLocaleDateString();
-  };
 
   const formatCurrency = (amount: number, currency = 'USD') => {
     return new Intl.NumberFormat('en-US', {
@@ -82,11 +76,9 @@ export function LocationInsightsModal({
                 : 'Visualiser'}
           </DialogTitle>
           <DialogDescription>
-            Visualise the data we have for{' '}
-            {person ? person.name : 'this person'}.
+            Visualise the data we have for {person ? person.name : 'this person'}.
           </DialogDescription>
         </DialogHeader>
-
         <ScrollArea className="max-h-[60vh]">
           {loading && (
             <div className="flex items-center justify-center py-8">
@@ -95,16 +87,12 @@ export function LocationInsightsModal({
             </div>
           )}
 
-          {error && (
-            <div className="text-destructive text-center py-4">{error}</div>
-          )}
+          {error && <div className="text-destructive text-center py-4">{error}</div>}
 
           {person && !loading && (
             <div className="space-y-6">
               <section>
-                <h3 className="text-lg font-semibold mb-3">
-                  Basic Information
-                </h3>
+                <h3 className="text-lg font-semibold mb-3">Basic Information</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">
@@ -145,12 +133,57 @@ export function LocationInsightsModal({
 
               <Separator />
 
-              {person.locationInsights && (
+              {person.locationInsights?.currentLocation?.coords?.lat && (
                 <section>
                   <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                     <MapPin className="h-5 w-5" />
                     Location Insights
                   </h3>
+
+                  <div className="mb-6">
+                    <h4 className="text-md font-medium mb-3">Interactive Map</h4>
+                  </div>
+
+                  {/* Location Statistics */}
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Cities Visited
+                      </label>
+                      <p className="text-lg font-semibold">
+                        {person.locationInsights?.citiesVisited || 0}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Travel Frequency
+                      </label>
+                      <p className="text-lg font-semibold">
+                        {person.locationInsights?.travelFrequency || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Risk Indicators
+                      </label>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Avg. Stay Duration
+                      </label>
+                      <p className="text-lg font-semibold">
+                        {person.locationInsights?.locationHistory?.length > 0
+                          ? Math.round(
+                              person.locationInsights.locationHistory.reduce(
+                                (acc, loc) => acc + (loc.duration || 0),
+                                0,
+                              ) / person.locationInsights.locationHistory.length,
+                            )
+                          : 0}{' '}
+                        days
+                      </p>
+                    </div>
+                  </div>
                 </section>
               )}
             </div>

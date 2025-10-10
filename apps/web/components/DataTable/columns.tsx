@@ -1,5 +1,5 @@
 'use client';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, Table, Row, Column } from '@tanstack/react-table';
 import { Person } from '../../app/types/person';
 import { Checkbox } from '@workspace/ui/components/checkbox';
 import { DataTableColumnHeader } from './data-table-column-header';
@@ -17,10 +17,10 @@ const getRiskByScore = (risk: number) => {
   return 'High';
 };
 
-export const getColumns: ColumnDef<Person>[] = (valsHidden: boolean) => [
+export const getColumns = (valsHidden: boolean): ColumnDef<Person>[] => [
   {
     id: 'select',
-    header: ({ table }) => (
+    header: ({ table }: { table: Table<Person> }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
@@ -31,7 +31,7 @@ export const getColumns: ColumnDef<Person>[] = (valsHidden: boolean) => [
         className="translate-y-[2px] m-2"
       />
     ),
-    cell: ({ row }) => (
+    cell: ({ row }: { row: Row<Person> }) => (
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
@@ -44,10 +44,10 @@ export const getColumns: ColumnDef<Person>[] = (valsHidden: boolean) => [
   },
   {
     accessorKey: 'id',
-    header: ({ column }) => (
+    header: ({ column }: { column: Column<Person> }) => (
       <DataTableColumnHeader column={column} title="Id" />
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<Person> }) => {
       const id = row.getValue('id') as string;
       return <div className="font-medium">{id}</div>;
     },
@@ -55,20 +55,20 @@ export const getColumns: ColumnDef<Person>[] = (valsHidden: boolean) => [
   },
   {
     accessorKey: 'name',
-    header: ({ column }) => (
+    header: ({ column }: { column: Column<Person> }) => (
       <DataTableColumnHeader column={column} title="Name" />
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<Person> }) => {
       return <div className={'font-medium'}>{row.getValue('name')}</div>;
     },
     sortingFn: 'alphanumeric',
   },
   {
     accessorKey: 'risk',
-    header: ({ column }) => (
+    header: ({ column }: { column: Column<Person> }) => (
       <DataTableColumnHeader column={column} title="Risk" />
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<Person> }) => {
       const riskScore = row.getValue('risk') as number;
       const risk = getRiskByScore(riskScore);
       const riskColor =
@@ -86,27 +86,27 @@ export const getColumns: ColumnDef<Person>[] = (valsHidden: boolean) => [
   },
   {
     accessorKey: 'location',
-    header: ({ column }) => (
+    header: ({ column }: { column: Column<Person> }) => (
       <DataTableColumnHeader column={column} title="Location" />
     ),
-    cell: ({ row }) => {
-      const location = row.getValue('location');
+    cell: ({ row }: { row: Row<Person> }) => {
+      const location = row.getValue('location') as Person['location'];
       return (
         <div className="font-medium">
           {location.city}, {location.coords.lat}, {location.coords.lng}
         </div>
       );
     },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id).city);
+    filterFn: (row: Row<Person>, id: string, value: string[]) => {
+      return value.includes((row.getValue(id) as Person['location']).city);
     },
   },
   {
     accessorKey: 'salary',
-    header: ({ column }) => (
+    header: ({ column }: { column: Column<Person> }) => (
       <DataTableColumnHeader column={column} title="Salary" />
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<Person> }) => {
       if (valsHidden) return '---';
       const salary = parseFloat(row.getValue('salary'));
       const formatted = new Intl.NumberFormat('en-GB', {
@@ -118,21 +118,21 @@ export const getColumns: ColumnDef<Person>[] = (valsHidden: boolean) => [
   },
   {
     accessorKey: 'accountNumber',
-    header: ({ column }) => (
+    header: ({ column }: { column: Column<Person> }) => (
       <DataTableColumnHeader column={column} title="Account Number" />
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<Person> }) => {
       const accountNumber = row.getValue('accountNumber') as string;
       return <div className="font-medium">{accountNumber}</div>;
     },
-    sortingFn: 'number',
+    sortingFn: 'alphanumeric',
   },
   {
     accessorKey: 'dob',
-    header: ({ column }) => (
+    header: ({ column }: { column: Column<Person> }) => (
       <DataTableColumnHeader column={column} title="Date of Birth" />
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<Person> }) => {
       const dob = row.getValue('dob') as string;
       return <div className="font-medium">{dob}</div>;
     },
@@ -140,16 +140,16 @@ export const getColumns: ColumnDef<Person>[] = (valsHidden: boolean) => [
   },
   {
     id: 'actions',
-    cell: ({ row }) => <DataTableRowActions row={row} />,
+    cell: ({ row }: { row: Row<Person> }) => <DataTableRowActions row={row} />,
   },
   {
     id: 'bio',
     accessorKey: 'bio',
-    sorting: false,
-    header: ({ column }) => (
+    enableSorting: false,
+    header: ({ column }: { column: Column<Person> }) => (
       <DataTableColumnHeader column={column} disableSorting title="Bio" />
     ),
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<Person> }) => {
       const bio = row.getValue('bio') as string;
       return (
         <Tooltip>

@@ -1,7 +1,7 @@
 'use client';
 
 import { Row } from '@tanstack/react-table';
-import { MoreHorizontal, User } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
 
 import { Button } from '@workspace/ui/components/button';
 import {
@@ -18,26 +18,20 @@ import {
   DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu';
 
-import { labels } from '../../data';
+import { risk } from '../../data';
 import { personSchema } from '../../data';
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
 }
 
-export function DataTableRowActions<TData>({
-  row,
-}: DataTableRowActionsProps<TData>) {
+export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TData>) {
   const person = personSchema.parse(row.original);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="data-[state=open]:bg-muted size-8"
-        >
+        <Button variant="ghost" size="icon" className="data-[state=open]:bg-muted size-8">
           <MoreHorizontal />
           <span className="sr-only">Open menu</span>
         </Button>
@@ -48,16 +42,16 @@ export function DataTableRowActions<TData>({
         <DropdownMenuItem>Add to list...</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger>Apply label...</DropdownMenuSubTrigger>
+          <DropdownMenuSubTrigger>Apply risk level...</DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
-            <DropdownMenuRadioGroup value={person.risk}>
-              {labels.map((label) => (
+            <DropdownMenuRadioGroup value={person.risk.toString()}>
+              {risk.map((riskLevel) => (
                 <DropdownMenuRadioItem
                   className="flex items-center gap-2"
-                  key={label.value}
-                  value={label.value}
+                  key={riskLevel.value}
+                  value={riskLevel.value}
                 >
-                  <User /> {label.label}
+                  <riskLevel.icon className="size-4" /> {riskLevel.label}
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>

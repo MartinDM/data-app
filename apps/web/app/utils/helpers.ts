@@ -1,13 +1,14 @@
 import {
   Person,
   CreditCardTransaction,
-  LocationHistoryEntry,
+  LocationHistory,
   LocationInsights,
   TransactionInsights,
 } from '../types/person';
-
+import { fakerEN_GB } from '@faker-js/faker';
 import { faker } from '@faker-js/faker';
-import { MapLocation } from '../types/map';
+import { MapboxReverseGeocodeResponse } from '../types/location';
+
 const merchantCategories = [
   'grocery',
   'gas',
@@ -21,28 +22,33 @@ const merchantCategories = [
 ] as const;
 const currencies = ['USD', 'EUR', 'GBP', 'CAD', 'JPY'] as const;
 const transactionTypes = ['purchase', 'refund', 'withdrawal', 'fee'] as const;
-const transactionStatuses = [
-  'completed',
-  'pending',
-  'declined',
-  'disputed',
-] as const;
+const transactionStatuses = ['completed', 'pending', 'declined', 'disputed'] as const;
 const confidenceLevels = ['high', 'medium', 'low'] as const;
-const sources = [
-  'gps',
-  'check-in',
-  'transaction',
-  'survey',
-  'inferred',
-] as const;
-const locationTypes = [
-  'residence',
-  'work',
-  'travel',
-  'visit',
-  'other',
-] as const;
+const sources = ['gps', 'check-in', 'transaction', 'survey', 'inferred'] as const;
+const locationTypes = ['residence', 'work', 'travel', 'visit', 'other'] as const;
 const residenceTypes = ['primary', 'secondary', 'temporary'] as const;
+
+export const getAddressFromPos = async ({
+  lng,
+  lat,
+}: {
+  lng: number;
+  lat: number;
+}): Promise<MapboxReverseGeocodeResponse> => {
+  if (!lng || !lat) {
+    throw new Error('Invalid coordinates');
+  }
+  const geoCodeData = await getGeoData({ lng, lat });
+  return geoCodeData;
+};
+
+function formatDateToString(date: Date): string {
+  const datePart = date.toISOString().split('T')[0];
+  if (!datePart) {
+    throw new Error('Failed to format date');
+  }
+  return datePart;
+}
 
 function generateCreditCardTransaction(): CreditCardTransaction {
   const isOnline = faker.datatype.boolean();
@@ -55,18 +61,20 @@ function generateCreditCardTransaction(): CreditCardTransaction {
     currency: faker.helpers.arrayElement(currencies),
     merchantName: faker.company.name(),
     merchantCategory,
-    location: isOnline
-      ? undefined
+    ...(isOnline
+      ? {}
       : {
-          city: faker.location.city(),
-          state: faker.location.state(),
-          country: faker.location.country(),
-          coords: {
-            lat: parseFloat(faker.location.latitude()),
-            lng: parseFloat(faker.location.longitude()),
+          location: {
+            city: faker.location.city(),
+            state: faker.location.state(),
+            country: faker.location.country(),
+            coords: {
+              lat: faker.location.latitude(),
+              lng: faker.location.longitude(),
+            },
+            address: faker.location.streetAddress(),
           },
-          address: faker.location.streetAddress(),
-        },
+        }),
     cardLastFour: faker.finance.creditCardNumber().slice(-4),
     transactionType: faker.helpers.arrayElement(transactionTypes),
     isOnline,
@@ -75,22 +83,25 @@ function generateCreditCardTransaction(): CreditCardTransaction {
   };
 }
 
-function generateLocationHistoryEntry(): LocationHistoryEntry {
+function generateLocationHistoryEntry(): LocationHistory {
+  const { address, coords } = getAddressDetails();
+  const [lat, lng] = coords;
+
   return {
     id: faker.string.uuid(),
     timestamp: faker.date.past({ years: 2 }),
     location: {
-      city: faker.location.city(),
-      state: faker.location.state(),
-      country: faker.location.country(),
+      city: fakerEN_GB.location.city(),
+      state: fakerEN_GB.location.state(),
+      country: fakerEN_GB.location.country(),
       coords: {
-        lat: parseFloat(faker.location.latitude()),
-        lng: parseFloat(faker.location.longitude()),
+        lat,
+        lng,
       },
-      address: faker.location.streetAddress(),
-      postalCode: faker.location.zipCode(),
+      address,
+      postalCode: fakerEN_GB.location.zipCode(),
     },
-    type: faker.helpers.arrayElement(locationTypes),
+    locationType: faker.helpers.arrayElement(locationTypes),
     duration: faker.number.int({ min: 1, max: 365 }),
     confidence: faker.helpers.arrayElement(confidenceLevels),
     source: faker.helpers.arrayElement(sources),
@@ -113,10 +124,7 @@ function generateTransactionInsights(
     const categoryTransactions = transactions.filter(
       (t) => t.merchantCategory === category,
     );
-    const categoryAmount = categoryTransactions.reduce(
-      (sum, t) => sum + t.amount,
-      0,
-    );
+    const categoryAmount = categoryTransactions.reduce((sum, t) => sum + t.amount, 0);
     categoryBreakdown[category] = {
       amount: categoryAmount,
       percentage: totalSpent > 0 ? (categoryAmount / totalSpent) * 100 : 0,
@@ -169,7 +177,7 @@ function generateTransactionInsights(
           totalSpent: t.amount,
           transactionCount: 1,
           lastTransaction: t.timestamp,
-          coords: t.location.coords,
+          ...(t.location.coords ? { coords: t.location.coords } : {}),
         });
       }
     }
@@ -178,17 +186,14 @@ function generateTransactionInsights(
   const foreignTransactions = transactions.filter(
     (t) => t.location?.country !== 'United States',
   ).length;
-  const travelTransactions = transactions.filter(
-    (t) => t.merchantCategory === 'travel',
-  );
+  const travelTransactions = transactions.filter((t) => t.merchantCategory === 'travel');
   const largeTransactions = transactions.filter((t) => t.amount > 200);
 
   return {
     recentTransactions: transactions,
     spendingPatterns: {
       totalSpent,
-      averageTransaction:
-        transactionCount > 0 ? totalSpent / transactionCount : 0,
+      averageTransaction: transactionCount > 0 ? totalSpent / transactionCount : 0,
       transactionCount,
       categoryBreakdown,
       monthlyTrends,
@@ -221,7 +226,56 @@ function generateTransactionInsights(
   };
 }
 
-function generateLocationInsights(): LocationInsights {
+export const getGeoData = async ({
+  lng,
+  lat,
+}: {
+  lng: number;
+  lat: number;
+}): Promise<MapboxReverseGeocodeResponse> => {
+  const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+
+  if (!token) {
+    throw new Error('NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN is not defined');
+  }
+
+  const url = `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${lng}&latitude=${lat}&access_token=${token}`;
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Mapbox API error:', response.status, errorText);
+    throw new Error(`Failed to fetch geocode data: ${response.status} - ${errorText}`);
+  }
+
+  return await response.json();
+};
+
+export const getAddressDetails = (): { address: string; coords: [number, number] } => {
+  const address = fakerEN_GB.location.streetAddress(true);
+
+  // Generate coordinates that correspond to realistic UK locations
+  const coords = faker.location.nearbyGPSCoordinate({
+    origin: [51.5074, -0.1278], // London
+    radius: 200,
+    isMetric: true,
+  });
+
+  return { address, coords };
+};
+
+export const getLngLatFromRadius = (): [number, number] => {
+  return faker.location.nearbyGPSCoordinate({
+    origin: [51.5074, -0.1278], // London
+    radius: 200,
+    isMetric: true,
+  });
+};
+
+export function generateLocationInsights(city: string): LocationInsights {
+  const { address, coords } = getAddressDetails();
+  const [lat, lng] = coords;
   const locationHistory = Array.from(
     { length: faker.number.int({ min: 5, max: 15 }) },
     () => generateLocationHistoryEntry(),
@@ -242,22 +296,24 @@ function generateLocationInsights(): LocationInsights {
     (_, i) => {
       const startDate = faker.date.past({ years: 10 });
       const endDate =
-        i === 0
-          ? undefined
-          : faker.date.between({ from: startDate, to: new Date() });
+        i === 0 ? undefined : faker.date.between({ from: startDate, to: new Date() });
+      const { coords } = getAddressDetails();
+      const [lat, lng] = coords;
 
       return {
+        id: faker.string.uuid(),
+        timestamp: faker.date.past({ years: 2 }),
         location: {
-          city: faker.location.city(),
-          state: faker.location.state(),
-          country: faker.location.country(),
+          city: fakerEN_GB.location.city(),
+          state: fakerEN_GB.location.state(),
+          country: fakerEN_GB.location.country(),
           coords: {
-            lat: parseFloat(faker.location.latitude()),
-            lng: parseFloat(faker.location.longitude()),
+            lat,
+            lng,
           },
         },
         startDate,
-        endDate,
+        ...(endDate ? { endDate } : {}),
         residenceType: faker.helpers.arrayElement(residenceTypes),
       };
     },
@@ -268,23 +324,24 @@ function generateLocationInsights(): LocationInsights {
     (_, i) => {
       const startDate = faker.date.past({ years: 5 });
       const endDate =
-        i === 0
-          ? undefined
-          : faker.date.between({ from: startDate, to: new Date() });
+        i === 0 ? undefined : faker.date.between({ from: startDate, to: new Date() });
+      const { address, coords } = getAddressDetails();
+      const [lat, lng] = coords;
 
       return {
         location: {
-          city: faker.location.city(),
-          state: faker.location.state(),
-          country: faker.location.country(),
+          city: fakerEN_GB.location.city(),
+          state: fakerEN_GB.location.state(),
+          country: fakerEN_GB.location.country(),
+          address,
           coords: {
-            lat: parseFloat(faker.location.latitude()),
-            lng: parseFloat(faker.location.longitude()),
+            lat,
+            lng,
           },
         },
         company: faker.company.name(),
         startDate,
-        endDate,
+        ...(endDate ? { endDate } : {}),
         isRemote: faker.datatype.boolean(),
       };
     },
@@ -292,13 +349,11 @@ function generateLocationInsights(): LocationInsights {
 
   return {
     currentLocation: {
-      city: faker.location.city(),
-      state: faker.location.state(),
-      country: faker.location.country(),
-      coords: {
-        lat: parseFloat(faker.location.latitude()),
-        lng: parseFloat(faker.location.longitude()),
-      },
+      city,
+      state: fakerEN_GB.location.state(),
+      country: fakerEN_GB.location.country(),
+      address,
+      coords: { lat, lng },
       since: faker.date.past({ years: 2 }),
     },
     locationHistory,
@@ -321,6 +376,11 @@ export function createPeople(count: number): Person[] {
       () => generateCreditCardTransaction(),
     );
 
+    // Generate location first to use in insights and location
+    const city = faker.location.city();
+    const [lat, lng] = getLngLatFromRadius();
+    const coords = { lat, lng };
+
     return {
       id: `U${(1000 + index).toString().padStart(4, '0')}`,
       name: faker.person.fullName(),
@@ -328,37 +388,13 @@ export function createPeople(count: number): Person[] {
       accountNumber: faker.finance.accountNumber(),
       salary: faker.number.int({ min: 30000, max: 120000 }),
       bio: faker.person.bio(),
-      dob: faker.date.past({ years: 30 }).toISOString().split('T')[0], // Convert Date to YYYY-MM-DD string
+      dob: formatDateToString(faker.date.past({ years: 30 })),
       location: {
-        city: faker.location.city(),
-        coords: {
-          lat: parseFloat(faker.location.latitude()),
-          lng: parseFloat(faker.location.longitude()),
-        },
+        city,
+        coords,
       },
-      locationInsights: generateLocationInsights(),
+      locationInsights: generateLocationInsights(city),
       transactionInsights: generateTransactionInsights(transactions),
     };
   });
-}
-
-export function mapDataFromPerson(person: Person): MapLocation[] {
-  return [
-    {
-      id: person.id,
-      type: 'home',
-      coords: person.location.coords,
-      title: `${person.name}'s Home`,
-      description: `Home location of ${person.name}`,
-      timestamp: new Date(),
-    },
-    {
-      id: person.id,
-      type: 'work',
-      coords: person.location.coords,
-      title: `${person.name}'s Work`,
-      description: `Work location of ${person.name}`,
-      timestamp: new Date(),
-    },
-  ];
 }

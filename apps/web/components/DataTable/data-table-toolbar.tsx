@@ -12,6 +12,8 @@ import { DataTableFacetedFilter } from './data-table-faceted-filter';
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
+  valsHidden: boolean;
+  setValsHidden: (hidden: boolean) => void;
 }
 
 export function DataTableToolbar<TData>({
@@ -20,6 +22,7 @@ export function DataTableToolbar<TData>({
   setValsHidden,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
+  const riskColumn = table.getColumn('risk');
 
   return (
     <div className="flex items-center space-between">
@@ -33,12 +36,8 @@ export function DataTableToolbar<TData>({
           className="h-8 w-[150px] lg:w-[250px]"
         />
 
-        {table.getColumn('risk') && (
-          <DataTableFacetedFilter
-            column={table.getColumn('risk')}
-            title="Risk"
-            options={risk}
-          />
+        {riskColumn && (
+          <DataTableFacetedFilter column={riskColumn} title="Risk" options={risk} />
         )}
         {isFiltered && (
           <Button

@@ -1,30 +1,54 @@
-# shadcn + pnpm Monorepo Demo
+# Data App - User Risk Visualization
 
-This repository demonstrates how to use [shadcn/ui](https://ui.shadcn.com/) in a monorepo setup managed by [pnpm](https://pnpm.io/).
+A Next.js monorepo application for visualizing user data and risk metrics on interactive maps.
+
+## Key Features
+
+- **Risk Data Visualization** - Display user risk scores (0-100) with categorized risk levels (Low/Medium/High)
+- **Interactive Maps** - Powered by Mapbox GL JS with markers for current locations and residence history
+- **Reverse Geocoding** - Automatically fetch and display address information from coordinates
+- **Data Tables** - TanStack Table with sorting, filtering, and row selection
+- **Monorepo Architecture** - Shared UI components, TypeScript configs, and ESLint rules
 
 ## Project Structure
 
 ```
 .
 ├── apps/
-│   └── web/           # Next.js app using shadcn/ui
+│   └── web/           # Next.js app with data tables and maps
 ├── packages/
-│   ├── ui/            # Shared UI components (shadcn/ui-based)
-│   ├── typescript-config/  # Shared TypeScript configs
-│   └── eslint-config/      # Shared ESLint configs
-├── package.json       # Monorepo root
-├── pnpm-workspace.yaml
-└── turbo.json         # TurboRepo config (optional)
+│   ├── ui/            # Shared shadcn/ui components
+│   ├── typescript-config/  # Shared TypeScript configurations
+│   └── eslint-config/      # Shared ESLint rules
+└── turbo.json         # Turborepo build orchestration
 ```
 
-## Features
+## Main Functionality
 
-- **Monorepo** managed with pnpm workspaces
-- **Next.js** app in `apps/web`
-- **Shared UI** components in `packages/ui` using shadcn/ui
-- **Reusable configs** for TypeScript and ESLint
+### 1. User Data Tables
+
+- Browse generated user data with risk scores, locations, and transaction history
+- Filter by risk level, date ranges, and other criteria
+- Select rows to view detailed insights
+- Pagination and sorting capabilities
+
+### 2. Map Visualization
+
+- **Mapbox Integration** - Uses Mapbox GL JS for rendering interactive maps
+- **Current Location Markers** - Blue markers show users' current locations
+- **Residence History** - Black house icons mark historical residence locations
+- **Reverse Geocoding** - Fetches street addresses, postcodes, and countries from lat/lng coordinates
+- **Interactive Popups** - Click markers to see location details, dates, and residence types
 
 ## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- pnpm 8+
+- Mapbox access token ([Get one here](https://account.mapbox.com/))
+
+### Installation
 
 1. **Install dependencies**
 
@@ -32,67 +56,66 @@ This repository demonstrates how to use [shadcn/ui](https://ui.shadcn.com/) in a
 pnpm install
 ```
 
-2. **Run the Next.js app**
+2. **Set up environment variables**
 
 ```sh
+# In apps/web/.env
+NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_mapbox_token_here
+```
+
+3. **Run the development server**
+
+```sh
+pnpm dev
+# or run specific app
 pnpm --filter web dev
 ```
 
-3. **Develop shared UI**
-
-- Edit components in `packages/ui/src/components/`
-- Import them in your app: `import { Button } from '@your-scope/ui'`
-
-4. **Add a shadcn/ui component to your app**
-
-To add a new component from shadcn/ui to your app, navigate to your app directory (e.g., `apps/web`) and run the `add` command:
-
-```sh
-cd apps/web
-pnpm dlx shadcn@latest add <component>
-```
-
-Replace `<component>` with the name of the component you want to add (e.g., `button`).
-
-The component will be placed in the appropriate directory (e.g., `packages/ui/src/components/`).
-
-## Using shadcn/ui
-
-- The `ui` package is set up with shadcn/ui components (see `packages/ui/src/components/`).
-- You can customize or extend these components as needed.
-- Styles are managed with PostCSS and Tailwind (see `postcss.config.mjs` and `globals.css`).
-
-## Monorepo Tips
-
-- Use `pnpm` workspace commands to run scripts across packages.
-- Share code and configs via the `packages/` directory.
-- Use TurboRepo (`turbo.json`) for advanced task orchestration (optional).
-
-## Useful Commands
-
-- Install a dependency in a specific package:
-
-```sh
-pnpm add <package> --filter <package-name>
-```
-
-- Run lint across all packages:
-
-```sh
-pnpm lint
-```
-
-- Build all packages:
+4. **Build for production**
 
 ```sh
 pnpm build
 ```
 
-- [shadcn/ui Documentation](https://ui.shadcn.com/docs)
-- [pnpm Workspaces](https://pnpm.io/workspaces)
+## Technology Stack
+
+- **Framework**: Next.js 15 (App Router)
+- **UI Components**: shadcn/ui + Radix UI
+- **Styling**: Tailwind CSS 4
+- **Maps**: Mapbox GL JS
+- **Tables**: TanStack Table v8
+- **Data Generation**: Faker.js
+- **Build Tool**: Turborepo
+- **Package Manager**: pnpm
+
+## Useful Commands
+
+```sh
+# Run linting across all packages
+pnpm lint
+
+# Build all packages
+pnpm build
+
+# Add a dependency to a specific package
+pnpm add <package> --filter web
+
+# Add a shadcn/ui component
+cd apps/web
+pnpm dlx shadcn@latest add <component>
+```
+
+## Monorepo Benefits
+
+- **Shared UI Components** - Reusable shadcn/ui components in `@workspace/ui`
+- **Consistent Tooling** - Centralized TypeScript and ESLint configurations
+- **Faster Builds** - Turborepo caching and parallel execution
+- **Type Safety** - Strict TypeScript with `exactOptionalPropertyTypes`
+
+## Learn More
+
+- [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/)
+- [TanStack Table](https://tanstack.com/table/latest)
+- [shadcn/ui](https://ui.shadcn.com/)
 - [Next.js](https://nextjs.org/)
-- [TurboRepo](https://turbo.build/)
-
----
-
-This demo is a starting point for building scalable, maintainable monorepos with shadcn/ui and pnpm.
+- [Turborepo](https://turbo.build/)

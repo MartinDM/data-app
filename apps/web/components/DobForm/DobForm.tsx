@@ -24,31 +24,28 @@ import {
   PopoverTrigger,
 } from '@workspace/ui/components/popover';
 
+export type DateRange = { from?: Date; to?: Date };
+
 export type DobFormProps = {
-  dateRange: { from?: Date; to?: Date };
-  setDateRange: React.Dispatch<
-    React.SetStateAction<{ from?: Date | undefined; to?: Date | undefined }>
-  >;
+  dateRange: DateRange;
+  setDateRange: React.Dispatch<React.SetStateAction<DateRange>>;
 };
 
-export const DobForm: React.FC<DobFormProps> = ({
-  dateRange,
-  setDateRange,
-}) => {
+export const DobForm: React.FC<DobFormProps> = ({ setDateRange }) => {
   const handleReset = () => {
     form.reset();
     setDateRange({});
   };
-  const onSubmit = (data: { dob: { from?: Date; to?: Date } }) => {
-    setDateRange({ from: data.dob.from, to: data.dob.to });
+  const onSubmit = (data: { dob: DateRange }) => {
+    setDateRange(data.dob);
   };
 
   const form = useForm<{
-    dob: { from?: Date; to?: Date };
+    dob: DateRange;
   }>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      dob: { from: undefined, to: undefined },
+      dob: {},
     },
   });
   return (
@@ -61,10 +58,7 @@ export const DobForm: React.FC<DobFormProps> = ({
             render={({ field }) => (
               <FormItem className="flex font-bold items-center flex-col">
                 <h1>Filter by date DOB range</h1>
-                <FormLabel>
-                  {' '}
-                  A list of customers born between two dates.
-                </FormLabel>
+                <FormLabel> A list of customers born between two dates.</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>

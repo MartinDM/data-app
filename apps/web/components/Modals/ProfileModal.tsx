@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Person } from '../../app/types/person';
-import { MapPin, Calendar, CreditCard, Loader2, User } from 'lucide-react';
+import { MapPin, CreditCard, Loader2, User } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -12,20 +12,16 @@ import {
 import { Badge } from '@workspace/ui/components/badge';
 import { Separator } from '@workspace/ui/components/separator';
 import { ScrollArea } from '@workspace/ui/components/scroll-area';
+import { usePersonData } from '../../contexts/PersonDataContext';
 
 interface ProfileModaProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   personId: string;
-  fetchPersonById: (id: string) => Person | undefined;
 }
 
-export function ProfileModal({
-  isOpen,
-  onOpenChange,
-  personId,
-  fetchPersonById,
-}: ProfileModaProps) {
+export function ProfileModal({ isOpen, onOpenChange, personId }: ProfileModaProps) {
+  const { fetchPersonById } = usePersonData();
   const [person, setPerson] = useState<Person | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +38,7 @@ export function ProfileModal({
           setError('Person not found');
         }
         setLoading(false);
-      } catch (err) {
+      } catch (_err) {
         setError('Failed to load person data');
         setLoading(false);
       }
@@ -76,8 +72,8 @@ export function ProfileModal({
                 : 'Person Insights'}
           </DialogTitle>
           <DialogDescription>
-            Comprehensive insights including location history, transactions, and
-            personal details
+            Comprehensive insights including location history, transactions, and personal
+            details
           </DialogDescription>
         </DialogHeader>
 
@@ -89,16 +85,12 @@ export function ProfileModal({
             </div>
           )}
 
-          {error && (
-            <div className="text-destructive text-center py-4">{error}</div>
-          )}
+          {error && <div className="text-destructive text-center py-4">{error}</div>}
 
           {person && !loading && (
             <div className="space-y-6">
               <section>
-                <h3 className="text-lg font-semibold mb-3">
-                  Basic Information
-                </h3>
+                <h3 className="text-lg font-semibold mb-3">Basic Information</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">
@@ -153,12 +145,8 @@ export function ProfileModal({
                   </div>
                 </div>
                 <div className="mt-4">
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Bio
-                  </label>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {person.bio}
-                  </p>
+                  <label className="text-sm font-medium text-muted-foreground">Bio</label>
+                  <p className="text-sm text-muted-foreground mt-1">{person.bio}</p>
                 </div>
               </section>
 
@@ -174,47 +162,33 @@ export function ProfileModal({
 
                   {/* Current Location */}
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium mb-2">
-                      Current Location
-                    </h4>
+                    <h4 className="text-sm font-medium mb-2">Current Location</h4>
                     <div className="bg-muted/50 p-3 rounded-lg">
                       <p className="text-sm">
                         {person.locationInsights.currentLocation.city},{' '}
                         {person.locationInsights.currentLocation.country}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Since:{' '}
-                        {formatDate(
-                          person.locationInsights.currentLocation.since,
-                        )}
+                        Since: {formatDate(person.locationInsights.currentLocation.since)}
                       </p>
                     </div>
                   </div>
 
                   {/* Travel Patterns */}
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium mb-2">
-                      Travel Patterns
-                    </h4>
+                    <h4 className="text-sm font-medium mb-2">Travel Patterns</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-muted/50 p-3 rounded-lg">
-                        <p className="text-xs text-muted-foreground">
-                          Mobility Score
-                        </p>
+                        <p className="text-xs text-muted-foreground">Mobility Score</p>
                         <p className="text-lg font-semibold">
                           {person.locationInsights.travelPatterns.mobilityScore}
                           /100
                         </p>
                       </div>
                       <div className="bg-muted/50 p-3 rounded-lg">
-                        <p className="text-xs text-muted-foreground">
-                          Avg Stay Duration
-                        </p>
+                        <p className="text-xs text-muted-foreground">Avg Stay Duration</p>
                         <p className="text-lg font-semibold">
-                          {
-                            person.locationInsights.travelPatterns
-                              .averageStayDuration
-                          }{' '}
+                          {person.locationInsights.travelPatterns.averageStayDuration}{' '}
                           days
                         </p>
                       </div>
@@ -224,21 +198,18 @@ export function ProfileModal({
                   {/* Recent Locations */}
                   {person.locationInsights.locationHistory.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-medium mb-2">
-                        Recent Locations
-                      </h4>
+                      <h4 className="text-sm font-medium mb-2">Recent Locations</h4>
                       <div className="space-y-2 max-h-40 overflow-y-auto">
                         {person.locationInsights.locationHistory
                           .slice(0, 5)
-                          .map((location, index) => (
+                          .map((location) => (
                             <div
                               key={location.id}
                               className="flex justify-between items-center p-2 bg-muted/30 rounded"
                             >
                               <div>
                                 <p className="text-sm font-medium">
-                                  {location.location.city},{' '}
-                                  {location.location.country}
+                                  {location.location.city}, {location.location.country}
                                 </p>
                                 <p className="text-xs text-muted-foreground capitalize">
                                   {location.type}
@@ -278,44 +249,32 @@ export function ProfileModal({
                       </p>
                       <p className="text-lg font-semibold">
                         {formatCurrency(
-                          person.transactionInsights.spendingPatterns
-                            .totalSpent,
+                          person.transactionInsights.spendingPatterns.totalSpent,
                         )}
                       </p>
                     </div>
                     <div className="bg-muted/50 p-3 rounded-lg">
-                      <p className="text-xs text-muted-foreground">
-                        Average Transaction
-                      </p>
+                      <p className="text-xs text-muted-foreground">Average Transaction</p>
                       <p className="text-lg font-semibold">
                         {formatCurrency(
-                          person.transactionInsights.spendingPatterns
-                            .averageTransaction,
+                          person.transactionInsights.spendingPatterns.averageTransaction,
                         )}
                       </p>
                     </div>
                     <div className="bg-muted/50 p-3 rounded-lg">
-                      <p className="text-xs text-muted-foreground">
-                        Transaction Count
-                      </p>
+                      <p className="text-xs text-muted-foreground">Transaction Count</p>
                       <p className="text-lg font-semibold">
-                        {
-                          person.transactionInsights.spendingPatterns
-                            .transactionCount
-                        }
+                        {person.transactionInsights.spendingPatterns.transactionCount}
                       </p>
                     </div>
                   </div>
 
                   {/* Top Spending Categories */}
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium mb-2">
-                      Top Spending Categories
-                    </h4>
+                    <h4 className="text-sm font-medium mb-2">Top Spending Categories</h4>
                     <div className="space-y-2">
                       {Object.entries(
-                        person.transactionInsights.spendingPatterns
-                          .categoryBreakdown,
+                        person.transactionInsights.spendingPatterns.categoryBreakdown,
                       )
                         .sort(([, a], [, b]) => b.amount - a.amount)
                         .slice(0, 5)
@@ -324,9 +283,7 @@ export function ProfileModal({
                             key={category}
                             className="flex justify-between items-center"
                           >
-                            <span className="text-sm capitalize">
-                              {category}
-                            </span>
+                            <span className="text-sm capitalize">{category}</span>
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium">
                                 {formatCurrency(data.amount)}
@@ -343,9 +300,7 @@ export function ProfileModal({
                   {/* Recent Transactions */}
                   {person.transactionInsights.recentTransactions.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-medium mb-2">
-                        Recent Transactions
-                      </h4>
+                      <h4 className="text-sm font-medium mb-2">Recent Transactions</h4>
                       <div className="space-y-2 max-h-40 overflow-y-auto">
                         {person.transactionInsights.recentTransactions
                           .sort(

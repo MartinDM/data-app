@@ -1,14 +1,5 @@
 import { z } from 'zod';
-import {
-  ArrowDown,
-  ArrowRight,
-  ArrowUp,
-  CheckCircle,
-  Circle,
-  CircleOff,
-  HelpCircle,
-  Timer,
-} from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUp, CircleOff, Timer } from 'lucide-react';
 
 export const personSchema = z.object({
   id: z.string(),

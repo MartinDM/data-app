@@ -48,7 +48,19 @@ export const nextJsConfig = [
       'react/prop-types': 'off',
       // Show unused variable warnings (disable base rule to avoid duplicates with TS rule)
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
+        },
+      ],
+      // Enhanced TypeScript error reporting (syntax-only rules)
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/ban-ts-comment': 'warn',
+      '@typescript-eslint/no-non-null-assertion': 'warn',
     },
   },
 ];

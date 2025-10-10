@@ -1,3 +1,53 @@
 {
-  // "tailwindCSS.experimental.configFile": "packages/ui/src/styles/globals.css"
+  // TypeScript Core Settings
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.suggest.autoImports": true,
+  "typescript.validate.enable": true,
+  "typescript.format.enable": true,
+  "typescript.suggest.completeFunctionCalls": true,
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  // TypeScript Error Reporting & Diagnostics
+  "typescript.reportStyleChecksAsWarnings": false,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+  "typescript.surveys.enabled": false,
+
+  // Enhanced Problem Display
+  "problems.showCurrentInStatus": true,
+  "problems.sortOrder": "severity",
+
+  // TypeScript IntelliSense & Completions
+  "typescript.preferences.includeCompletionsForModuleExports": true,
+  "typescript.preferences.includeCompletionsWithSnippetText": true,
+  "typescript.preferences.includeCompletionsForImportStatements": true,
+  "typescript.preferences.includeCompletionsWithClassMemberSnippets": true,
+  "typescript.suggest.includeCompletionsForModuleExports": true,
+  "typescript.suggest.includeAutomaticOptionalChainCompletions": true,
+  "typescript.preferences.quoteStyle": "double",
+
+  // TypeScript Inlay Hints
+  "typescript.inlayHints.parameterNames.enabled": "all",
+  "typescript.inlayHints.variableTypes.enabled": true,
+  "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+
+  // ESLint Configuration
+  "eslint.enable": true,
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  "eslint.run": "onType",
+  "eslint.workingDirectories": ["./apps/web"],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+
+  // Editor Settings
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.formatOnSave": true
 }

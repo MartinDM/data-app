@@ -7,13 +7,12 @@
       "@workspace/ui/*": ["../../packages/ui/src/*"],
       "@ui/*": ["../../packages/ui/src/*"]
     },
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    // Additional strict type checking options beyond base config
+    "strictPropertyInitialization": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true, 
+    "noUnusedParameters": true
   },
   "include": [
     "next-env.d.ts",
