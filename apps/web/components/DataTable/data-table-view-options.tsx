@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import { Table } from '@tanstack/react-table';
 import {
@@ -62,10 +63,6 @@ export function DataTableViewOptions<TData>({
 
   const handleLocationModal = () => {
     setOpenLocationModal(true);
-  };
-
-  const handleMapModal = () => {
-    setOpenMapModal(true);
   };
 
   const handlePersonProfile = () => {
@@ -148,11 +145,11 @@ export function DataTableViewOptions<TData>({
                   <DropdownMenuItem
                     onSelect={(e) => {
                       e.preventDefault();
-                      handleMapModal();
+                      handleMap();
                     }}
                   >
                     <Briefcase className="mr-2 h-4 w-4" />
-                    Map Visualiser
+                    <Link href={`map/${selectedIds[0]}`}>Map Visualiser</Link>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
@@ -212,11 +209,7 @@ export function DataTableViewOptions<TData>({
             personId={selectedIds[0]}
           />
 
-          <MapModal
-            isOpen={openMapModal}
-            onOpenChange={setOpenMapModal}
-            personId={selectedIds[0]}
-          />
+          <MapModal isOpen={openMapModal} onOpenChange={setOpenMapModal} />
         </>
       )}
     </div>
