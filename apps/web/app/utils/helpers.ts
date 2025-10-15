@@ -398,3 +398,7 @@ export function createPeople(count: number): Person[] {
     };
   });
 }
+
+export function fetchPersonById(people: Person[], id: number): Person | undefined {
+  return people.find((p) => p.id === id);
+}

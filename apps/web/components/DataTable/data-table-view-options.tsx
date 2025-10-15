@@ -28,7 +28,6 @@ import {
 import { Person } from '../../app/types/person';
 import { ProfileModal } from '../Modals/ProfileModal';
 import { LocationInsightsModal } from '../Modals';
-import { MapModal } from '../Modals/MapModal';
 
 interface DataTableViewOptionsProps<TData> {
   table: Table<TData>;
@@ -44,7 +43,6 @@ export function DataTableViewOptions<TData>({
   const [openInsights, setOpenInsights] = useState<boolean>(false);
   const [openPersonModal, setOpenPersonModal] = useState<boolean>(false);
   const [openLocationModal, setOpenLocationModal] = useState<boolean>(false);
-  const [openMapModal, setOpenMapModal] = useState<boolean>(false);
 
   // Calculate selected data directly with memoization for better performance
   const rowSelection = table.getState().rowSelection;
@@ -208,8 +206,6 @@ export function DataTableViewOptions<TData>({
             onOpenChange={setOpenLocationModal}
             personId={selectedIds[0]}
           />
-
-          <MapModal isOpen={openMapModal} onOpenChange={setOpenMapModal} />
         </>
       )}
     </div>

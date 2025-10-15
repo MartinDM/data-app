@@ -5,8 +5,8 @@ import { Person } from '../../types/person';
 import { MapPin } from 'lucide-react';
 import { Map } from '../../../components/Map/Map';
 import { Suspense } from 'react';
-import { getAddressFromPos } from '../../../app/utils/helpers';
-import { usePersonData } from '../../../contexts/PersonDataContext';
+import { fetchPersonById, getAddressFromPos } from '@/utils/helpers';
+import { useTable } from '@/contexts/TableContext';
 
 const MapLoading = () => (
   <div className="flex h-full w-full flex-col items-center justify-center gap-4">
@@ -15,22 +15,24 @@ const MapLoading = () => (
   </div>
 );
 export default function MapPage() {
-  const params = useParams<{ id: string }>();
-  const personId = params.id;
-  console.log('Person ID from params:', personId);
-  const { fetchPersonById } = usePersonData();
+  const personId = useParams().id;
+  const { table } = useTable<Person>();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [person, setPerson] = useState<Person | null>(null);
   const [address, setAddress] = useState<string>('');
-
+  const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     (async () => {
       if (personId && fetchPersonById) {
+        console.log('Person ID from params:', personId);
         setLoading(true);
         setError(null);
         try {
-          const personData = fetchPersonById(personId);
+          const personData = fetchPersonById(
+            table.getCoreRowModel().rows.map((r) => r.original),
+            Number(personId),
+          );
+
           setPerson(personData);
           if (!personData) {
             setError('Person not found');

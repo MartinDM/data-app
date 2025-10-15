@@ -3,6 +3,8 @@
 import * as React from 'react';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
 
+import { TableProvider } from '../contexts/TableContext';
+
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <NextThemesProvider
@@ -12,7 +14,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
       enableColorScheme
     >
-      {children}
+      <TableProvider>{children}</TableProvider>
     </NextThemesProvider>
   );
 }

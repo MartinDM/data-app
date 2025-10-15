@@ -1,7 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { Legend } from './components/Legend';
-
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { LocationInsights } from '../../app/types/person';
 import {
@@ -29,7 +28,6 @@ export function Map({ locationData }: { locationData: LocationInsights }) {
   const [showResidenceHistory, setShowResidenceHistory] = useState(true);
   const [showLocationHistory, setShowLocationHistory] = useState(true);
 
-  // Initialize map once
   useEffect(() => {
     if (!mapContainerRef.current || !locationData?.currentLocation?.coords) {
       return;
@@ -96,7 +94,6 @@ export function Map({ locationData }: { locationData: LocationInsights }) {
     };
   }, [showResidenceHistory, locationData?.residenceHistory]);
 
-  // Separate effect for managing location history markers
   useEffect(() => {
     if (!mapRef.current || !locationData?.locationHistory) return;
 

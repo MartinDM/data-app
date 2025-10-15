@@ -1,24 +1,11 @@
-'use client';
 import * as React from 'react';
-import { useState, useMemo } from 'react';
-import { Person } from '../../app/types/person';
+import { useState } from 'react';
+import { format } from 'date-fns';
+import { Person } from '@/app/types/person';
+import { useTable } from '@/contexts/TableContext';
 import { DataTableToolbar } from './data-table-toolbar';
-import { PersonDataProvider } from '../../contexts/PersonDataContext';
-import { DobForm, DateRange } from '../DobForm/DobForm';
-import {
-  ColumnFiltersState,
-  flexRender,
-  getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  SortingState,
-  useReactTable,
-  VisibilityState,
-} from '@tanstack/react-table';
-
+import { DobForm, DateRange } from '@/components/DobForm/DobForm';
+import { createPeople } from '@/app/utils/helpers';
 import {
   Table,
   TableBody,
@@ -27,74 +14,37 @@ import {
   TableHeader,
   TableRow,
 } from '@workspace/ui/components/table';
+import { flexRender } from '@tanstack/react-table';
 
-import { format } from 'date-fns';
-import { getColumns } from '../../components/DataTable/columns';
-
-interface DataTableProps {
-  allUsers: Person[];
-}
-
-export function DataTable({ allUsers }: DataTableProps) {
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [valsHidden, setValsHidden] = useState(false);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+export function DataTable() {
+  const { table, valsHidden, setValsHidden, setData } = useTable<Person>();
   const [dateRange, setDateRange] = useState<DateRange>({});
 
-  const selectedCount = Object.keys(rowSelection).length;
-
-  const users: Person[] = useMemo(() => {
+  useEffect(() => {
+    const people = createPeople(100);
     if (dateRange.from && dateRange.to) {
       const from = format(dateRange.from, 'yyyy-MM-dd');
       const to = format(dateRange.to, 'yyyy-MM-dd');
-      return allUsers
-        .filter((user) => user.dob >= from && user.dob <= to)
-        .sort((a, b) => a.dob.localeCompare(b.dob));
+      const filtered = people.filter((p) => p.dob >= from && p.dob <= to);
+      setData(filtered);
+    } else {
+      setData(people);
     }
-    return allUsers;
-  }, [dateRange, allUsers]);
+  }, [dateRange, setData]);
 
-  const columns = getColumns(valsHidden);
-
-  const table = useReactTable({
-    data: users,
-    columns,
-    state: {
-      sorting,
-      rowSelection,
-      columnFilters,
-      columnVisibility,
-    },
-    initialState: {
-      pagination: {
-        pageSize: 50,
-      },
-    },
-    enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
-    onColumnVisibilityChange: setColumnVisibility,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
-  });
+  const selectedCount = table.getSelectedRowModel().rows.length;
 
   return (
     <div className="w-full">
       <DobForm dateRange={dateRange} setDateRange={setDateRange} />
+
       <p className="text-right text-xs font-bold">
         Found {table.getFilteredRowModel().rows.length} results
       </p>
-
       <p className="text-right text-sm font-semibold text-zinc-200 mb-2">
         {selectedCount} selected
       </p>
+
       <div className="flex items-center py-4">
         <DataTableToolbar
           valsHidden={valsHidden}
@@ -102,23 +52,23 @@ export function DataTable({ allUsers }: DataTableProps) {
           table={table}
         />
       </div>
+
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
+
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
@@ -132,7 +82,10 @@ export function DataTable({ allUsers }: DataTableProps) {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={table.getAllColumns().length}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Person } from '../../app/types/person';
 import { MapPin, Loader2, Globe } from 'lucide-react';
+import { fetchPersonById, getAddressFromPos } from '@/utils/helpers';
 
 import {
   Dialog,
@@ -12,7 +13,6 @@ import {
 } from '@workspace/ui/components/dialog';
 import { Separator } from '@workspace/ui/components/separator';
 import { ScrollArea } from '@workspace/ui/components/scroll-area';
-import { usePersonData } from '../../contexts/PersonDataContext';
 
 interface LocationInsightsModalProps {
   isOpen: boolean;
@@ -25,13 +25,12 @@ export function LocationInsightsModal({
   onOpenChange,
   personId,
 }: LocationInsightsModalProps) {
-  const { fetchPersonById } = usePersonData();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [person, setPerson] = useState<Person | null>(null);
 
   useEffect(() => {
-    if (isOpen && personId && fetchPersonById) {
+    if (isOpen && personId) {
       setLoading(true);
       setError(null);
       try {
@@ -48,7 +47,7 @@ export function LocationInsightsModal({
         setLoading(false);
       }
     }
-  }, [isOpen, personId, fetchPersonById]);
+  }, [isOpen, personId]);
 
   useEffect(() => {
     setPerson(person); // Ensure person state is updated
