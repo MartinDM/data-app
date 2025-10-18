@@ -1,33 +1,33 @@
 'use client';
-import Link from 'next/link';
-import { useState, useMemo } from 'react';
 import { Table } from '@tanstack/react-table';
-import {
-  Settings2,
-  Globe,
-  Eye,
-  EyeOff,
-  User,
-  Users,
-  BarChart3,
-  MapPin,
-  Briefcase,
-  TrendingUp,
-} from 'lucide-react';
 import { Button } from '@workspace/ui/components/button';
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu';
+import {
+  BarChart3,
+  Briefcase,
+  Eye,
+  EyeOff,
+  Globe,
+  MapPin,
+  Settings2,
+  TrendingUp,
+  User,
+  Users,
+} from 'lucide-react';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import { Person } from '../../app/types/person';
-import { ProfileModal } from '../Modals/ProfileModal';
 import { LocationInsightsModal } from '../Modals';
+import { ProfileModal } from '../Modals/ProfileModal';
 
 interface DataTableViewOptionsProps<TData> {
   table: Table<TData>;
@@ -52,7 +52,6 @@ export function DataTableViewOptions<TData>({
       selectedCount: rows.length,
       selectedIds: rows.map((row) => (row.original as Person).id),
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table, rowSelection]);
 
   const handleValuesToggle = () => {
@@ -140,12 +139,7 @@ export function DataTableViewOptions<TData>({
                     <MapPin className="mr-2 h-4 w-4" />
                     Location History
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={(e) => {
-                      e.preventDefault();
-                      handleMap();
-                    }}
-                  >
+                  <DropdownMenuItem>
                     <Briefcase className="mr-2 h-4 w-4" />
                     <Link href={`map/${selectedIds[0]}`}>Map Visualiser</Link>
                   </DropdownMenuItem>

@@ -1,11 +1,7 @@
-import * as React from 'react';
-import { useState } from 'react';
-import { format } from 'date-fns';
-import { Person } from '@/app/types/person';
+'use client';
+import { DobForm } from '@/components/DobForm/DobForm';
 import { useTable } from '@/contexts/TableContext';
-import { DataTableToolbar } from './data-table-toolbar';
-import { DobForm, DateRange } from '@/components/DobForm/DobForm';
-import { createPeople } from '@/app/utils/helpers';
+import { flexRender } from '@tanstack/react-table';
 import {
   Table,
   TableBody,
@@ -14,30 +10,17 @@ import {
   TableHeader,
   TableRow,
 } from '@workspace/ui/components/table';
-import { flexRender } from '@tanstack/react-table';
+// Local date range state removed; now sourced from context
+import { DataTableToolbar } from './data-table-toolbar';
 
 export function DataTable() {
-  const { table, valsHidden, setValsHidden, setData } = useTable<Person>();
-  const [dateRange, setDateRange] = useState<DateRange>({});
-
-  useEffect(() => {
-    const people = createPeople(100);
-    if (dateRange.from && dateRange.to) {
-      const from = format(dateRange.from, 'yyyy-MM-dd');
-      const to = format(dateRange.to, 'yyyy-MM-dd');
-      const filtered = people.filter((p) => p.dob >= from && p.dob <= to);
-      setData(filtered);
-    } else {
-      setData(people);
-    }
-  }, [dateRange, setData]);
+  const { table, valsHidden, setValsHidden } = useTable();
 
   const selectedCount = table.getSelectedRowModel().rows.length;
 
   return (
     <div className="w-full">
-      <DobForm dateRange={dateRange} setDateRange={setDateRange} />
-
+      {/* <DobForm /> */}
       <p className="text-right text-xs font-bold">
         Found {table.getFilteredRowModel().rows.length} results
       </p>

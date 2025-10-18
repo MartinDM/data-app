@@ -9,6 +9,7 @@ import { DataTableViewOptions } from './data-table-view-options';
 
 import { risk } from '../../data';
 import { DataTableFacetedFilter } from './data-table-faceted-filter';
+import { usePeople } from "@/contexts/PeopleContext";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -23,7 +24,7 @@ export function DataTableToolbar<TData>({
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const riskColumn = table.getColumn('risk');
-
+  const { refresh } = usePeople()
   return (
     <div className="flex items-center space-between">
       <div className="flex flex-1 items-center space-x-2 mr-2">
@@ -49,6 +50,10 @@ export function DataTableToolbar<TData>({
             <X />
           </Button>
         )}
+        <Button onClick={() => {
+          refresh();
+          table.resetRowSelection(); // optional
+        }}>Refresh Data</Button>
       </div>
       <DataTableViewOptions
         setValsHidden={setValsHidden}

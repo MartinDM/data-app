@@ -1,21 +1,65 @@
 'use client';
-import { ColumnDef, Table, Row, Column } from '@tanstack/react-table';
-import { Person } from '../../app/types/person';
+import { Person } from '@/app/types/person';
+import { dateRangeFilter } from '@/app/utils';
+import { Column, ColumnDef, Row, Table } from '@tanstack/react-table';
 import { Checkbox } from '@workspace/ui/components/checkbox';
-import { DataTableColumnHeader } from './data-table-column-header';
-import { DataTableRowActions } from './data-table-row-actions';
-import { Info } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@workspace/ui/components/tooltip';
+import { Info } from 'lucide-react';
+import { DataTableColumnHeader } from './data-table-column-header';
+import { DataTableRowActions } from './data-table-row-actions';
 
 const getRiskByScore = (risk: number) => {
   if (risk < 33) return 'Low';
   if (risk < 66) return 'Medium';
   return 'High';
 };
+
+/* ==== ColumnHelper migration (step 1 & 2) ==================================
+
+// (Using manual column definitions until all columns are migrated to columnHelper.)
+const columnHelper = createColumnHelper<Person>();
+
+import { createColumnHelper } from '@tanstack/react-table';
+const columnHelper = createColumnHelper<Person>();
+
+// 1. Id column (accessor)
+const idColumn = columnHelper.accessor('id', {
+  header: ({ column }) => (
+    <DataTableColumnHeader column={column} title="Id" />
+  ),
+  cell: ({ row }) => {
+    const id = row.getValue('id') as string;
+    return <div className="font-medium">{id}</div>;
+  },
+  sortingFn: 'alphanumeric',
+});
+
+// 2. Account Number column (accessor)
+const accountNumberColumn = columnHelper.accessor('accountNumber', {
+  header: ({ column }) => (
+    <DataTableColumnHeader column={column} title="Account Number" />
+  ),
+  cell: ({ row }) => {
+    const acct = row.getValue('accountNumber') as string;
+    return <div className="font-medium">{acct}</div>;
+  },
+  sortingFn: 'alphanumeric',
+});
+
+// (Optional) Convert the select checkbox column later with:
+// const selectColumn = columnHelper.display({ id: 'select', header: ..., cell: ... })
+
+// Usage inside getColumns (replace the manual objects for these two):
+// export const getColumns = (valsHidden: boolean): ColumnDef<Person>[] => [
+//   /* existing manual select column (or selectColumn if converted) */
+//   idColumn,
+//   accountNumberColumn,
+//   // ...keep remaining manual columns for now
+// ];
 
 export const getColumns = (valsHidden: boolean): ColumnDef<Person>[] => [
   {
@@ -137,13 +181,13 @@ export const getColumns = (valsHidden: boolean): ColumnDef<Person>[] => [
       return <div className="font-medium">{dob}</div>;
     },
     sortingFn: 'datetime',
+    filterFn: dateRangeFilter,
   },
   {
     id: 'actions',
     cell: ({ row }: { row: Row<Person> }) => <DataTableRowActions row={row} />,
   },
   {
-    id: 'bio',
     accessorKey: 'bio',
     enableSorting: false,
     header: ({ column }: { column: Column<Person> }) => (

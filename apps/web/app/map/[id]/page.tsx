@@ -1,12 +1,11 @@
 'use client';
-import { useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { Person } from '../../types/person';
 import { MapPin } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 import { Map } from '../../../components/Map/Map';
-import { Suspense } from 'react';
-import { fetchPersonById, getAddressFromPos } from '@/utils/helpers';
-import { useTable } from '@/contexts/TableContext';
+import { Person } from '../../types/person';
+import { getAddressFromPos } from '../../utils/helpers';
+import { usePeople } from '@/contexts/PeopleContext';
 
 const MapLoading = () => (
   <div className="flex h-full w-full flex-col items-center justify-center gap-4">
@@ -15,50 +14,49 @@ const MapLoading = () => (
   </div>
 );
 export default function MapPage() {
-  const personId = useParams().id;
-  const { table } = useTable<Person>();
-  const [loading, setLoading] = useState(false);
-  const [person, setPerson] = useState<Person | null>(null);
-  const [address, setAddress] = useState<string>('');
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    (async () => {
-      if (personId && fetchPersonById) {
-        console.log('Person ID from params:', personId);
-        setLoading(true);
-        setError(null);
-        try {
-          const personData = fetchPersonById(
-            table.getCoreRowModel().rows.map((r) => r.original),
-            Number(personId),
-          );
+  const { id: personId } = useParams() as { id: string }
+  const { getPersonById } = usePeople();
 
-          setPerson(personData);
-          if (!personData) {
-            setError('Person not found');
-          }
-          const { lng, lat } = personData?.locationInsights.currentLocation.coords || {
-            lng: 0,
-            lat: 0,
-          };
-          const geoCodeResponse = await getAddressFromPos({ lng, lat });
-          const feature = geoCodeResponse.features[0];
-          const street =
-            feature?.properties.context.street?.name ||
-            feature?.properties.context.address?.name;
-          const postcode = feature?.properties.context.postcode?.name;
-          const country = feature?.properties.context.country?.name;
-          const addressParts = [street, postcode, country].filter(Boolean);
-          setAddress(addressParts.join(', ') || 'Address not found');
-          setLoading(false);
-        } catch (e) {
-          console.log(e);
-          setError('Failed to load person data');
-          setLoading(false);
+  const personData = getPersonById(personId)
+  const [loading, setLoading] = useState(false);
+  const [person, setPerson] = useState<Person>();
+  const [address, setAddress] = useState<string>('');
+  const [error, setError] = useState<string | null>();
+
+  useEffect(() => {
+    if (!personId) return;
+    (async () => {
+      console.log('Person ID from params:', personId);
+      setLoading(true);
+      setError(null);
+      try {
+
+        setPerson(personData);
+        console.log(personData);
+        if (!personData) {
+          setError('Person not found');
         }
+        const { lng, lat } = personData?.locationInsights?.currentLocation.coords || {
+          lng: 0,
+          lat: 0,
+        };
+        const geoCodeResponse = await getAddressFromPos({ lng, lat });
+        const feature = geoCodeResponse.features[0];
+        const street =
+          feature?.properties.context.street?.name ||
+          feature?.properties.context.address?.name;
+        const postcode = feature?.properties.context.postcode?.name;
+        const country = feature?.properties.context.country?.name;
+        const addressParts = [street, postcode, country].filter(Boolean);
+        setAddress(addressParts.join(', ') || 'Address not found');
+        setLoading(false);
+      } catch (e) {
+        console.log(e);
+        setError('Failed to load person data');
+        setLoading(false);
       }
     })();
-  }, []);
+  }, [personId]);
 
   return (
     <div className="h-screen w-full">

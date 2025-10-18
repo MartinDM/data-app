@@ -27,6 +27,7 @@
     "typescript.preferences.includePackageJsonAutoImports": "auto",
     "typescript.suggest.autoImports": true,
     "typescript.updateImportsOnFileMove.enabled": "always",
+    "typescript.inlayHints.parameterNames.enabled": "none",
 
     // Editor settings
     "editor.formatOnSave": true,

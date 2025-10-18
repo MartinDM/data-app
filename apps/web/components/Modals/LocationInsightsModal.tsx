@@ -1,8 +1,6 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { Person } from '../../app/types/person';
-import { MapPin, Loader2, Globe } from 'lucide-react';
-import { fetchPersonById, getAddressFromPos } from '@/utils/helpers';
+import { Globe, MapPin } from 'lucide-react';
+import { type Person } from '../../app/types/person';
 
 import {
   Dialog,
@@ -11,8 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@workspace/ui/components/dialog';
-import { Separator } from '@workspace/ui/components/separator';
 import { ScrollArea } from '@workspace/ui/components/scroll-area';
+import { Separator } from '@workspace/ui/components/separator';
+import { fetchPersonById, formatCurrency } from '@/utils/helpers';
+import { usePeople } from "@/contexts/PeopleContext";
 
 interface LocationInsightsModalProps {
   isOpen: boolean;
@@ -20,45 +20,15 @@ interface LocationInsightsModalProps {
   personId: string;
 }
 
+
 export function LocationInsightsModal({
   isOpen,
   onOpenChange,
   personId,
 }: LocationInsightsModalProps) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [person, setPerson] = useState<Person | null>(null);
 
-  useEffect(() => {
-    if (isOpen && personId) {
-      setLoading(true);
-      setError(null);
-      try {
-        const personData = fetchPersonById(personId);
-        console.log(personData);
-        setPerson(personData || null);
-        if (!personData) {
-          setError('Person not found');
-        }
-        setLoading(false);
-      } catch (e) {
-        console.log(e);
-        setError('Failed to load person data');
-        setLoading(false);
-      }
-    }
-  }, [isOpen, personId]);
-
-  useEffect(() => {
-    setPerson(person); // Ensure person state is updated
-  }, [person]);
-
-  const formatCurrency = (amount: number, currency = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount);
-  };
+  const { people } = usePeople()
+  const person = fetchPersonById(people, personId);
 
   if (!isOpen) return null;
 
@@ -68,27 +38,14 @@ export function LocationInsightsModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            {loading
-              ? 'Loading Map...'
-              : person
-                ? `${person.name} - Location Insights`
-                : 'Visualiser'}
           </DialogTitle>
           <DialogDescription>
             Visualise the data we have for {person ? person.name : 'this person'}.
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[60vh]">
-          {loading && (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin mr-2" />
-              Loading person data...
-            </div>
-          )}
 
-          {error && <div className="text-destructive text-center py-4">{error}</div>}
-
-          {person && !loading && (
+          {person && (
             <div className="space-y-6">
               <section>
                 <h3 className="text-lg font-semibold mb-3">Basic Information</h3>
@@ -147,22 +104,6 @@ export function LocationInsightsModal({
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">
-                        Cities Visited
-                      </label>
-                      <p className="text-lg font-semibold">
-                        {person.locationInsights?.citiesVisited || 0}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">
-                        Travel Frequency
-                      </label>
-                      <p className="text-lg font-semibold">
-                        {person.locationInsights?.travelFrequency || 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">
                         Risk Indicators
                       </label>
                     </div>
@@ -173,11 +114,11 @@ export function LocationInsightsModal({
                       <p className="text-lg font-semibold">
                         {person.locationInsights?.locationHistory?.length > 0
                           ? Math.round(
-                              person.locationInsights.locationHistory.reduce(
-                                (acc, loc) => acc + (loc.duration || 0),
-                                0,
-                              ) / person.locationInsights.locationHistory.length,
-                            )
+                            person.locationInsights.locationHistory.reduce(
+                              (acc, loc) => acc + (loc.duration || 0),
+                              0,
+                            ) / person.locationInsights.locationHistory.length,
+                          )
                           : 0}{' '}
                         days
                       </p>
